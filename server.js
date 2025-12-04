@@ -11,34 +11,42 @@ const app = express();
 const PORT = process.env.PORT || 3001;
 
 // Middleware
-// CORS configuration - simplified for maximum compatibility
-// Handle OPTIONS requests first, before other middleware
-app.use((req, res, next) => {
-  // Handle preflight OPTIONS requests
-  if (req.method === 'OPTIONS') {
-    res.header('Access-Control-Allow-Origin', req.headers.origin || '*');
-    res.header('Access-Control-Allow-Methods', 'GET, POST, PUT, DELETE, OPTIONS');
-    res.header('Access-Control-Allow-Headers', 'Content-Type, Authorization, X-Requested-With');
-    res.header('Access-Control-Allow-Credentials', 'true');
-    res.header('Access-Control-Max-Age', '86400'); // 24 hours
-    return res.status(200).end();
-  }
-  next();
-});
-
-// CORS configuration for all other requests
+// CORS configuration using Express CORS middleware
 const corsOptions = {
   origin: function (origin, callback) {
+    // Allow requests with no origin (like mobile apps or curl requests)
+    if (!origin) return callback(null, true);
+    
     // Allow all origins - you can restrict this in production if needed
+    // To restrict to specific domains, uncomment and modify:
+    /*
+    const allowedOrigins = [
+      'https://klaviyo-metric-dashboard.vercel.app',
+      'https://klaviyo-metric-dashboard-production.vercel.app',
+      /\.vercel\.app$/,
+      /\.vercel\.dev$/
+    ];
+    
+    const isAllowed = allowedOrigins.some(pattern => {
+      if (typeof pattern === 'string') return origin === pattern;
+      if (pattern instanceof RegExp) return pattern.test(origin);
+      return false;
+    });
+    
+    callback(isAllowed ? null : new Error('Not allowed by CORS'), isAllowed);
+    */
     callback(null, true);
   },
   credentials: true,
-  methods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS'],
+  methods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS', 'PATCH'],
   allowedHeaders: ['Content-Type', 'Authorization', 'X-Requested-With', 'Accept'],
   exposedHeaders: ['Content-Type', 'Authorization'],
-  optionsSuccessStatus: 200
+  optionsSuccessStatus: 200, // Some legacy browsers (IE11, various SmartTVs) choke on 204
+  preflightContinue: false, // Pass the CORS preflight response to the next handler
+  maxAge: 86400 // Cache preflight requests for 24 hours
 };
 
+// Apply CORS middleware - this handles both preflight (OPTIONS) and actual requests
 app.use(cors(corsOptions));
 
 app.use(express.json());
