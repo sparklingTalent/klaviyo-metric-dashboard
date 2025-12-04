@@ -1,0 +1,16 @@
+# Files to ignore during Vercel build
+# Don't ignore the client directory - we need it!
+
+server.js
+database.js
+auth.js
+klaviyoService.js
+*.db
+*.sqlite
+*.sqlite3
+node_modules/
+.env
+.env.local
+.DS_Store
+*.log
+
