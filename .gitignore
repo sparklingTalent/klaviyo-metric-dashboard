@@ -1,9 +1,14 @@
 node_modules/
 .env
+.env.local
+.env.production
 *.db
 *.sqlite
 *.sqlite3
 client/node_modules/
 client/build/
 .DS_Store
+*.log
+.vscode/
+.idea/
 

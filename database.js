@@ -7,10 +7,16 @@ const dbPath = path.join(__dirname, 'klaviyo_dashboard.db');
 const db = new sqlite3.Database(dbPath, (err) => {
   if (err) {
     console.error('Error opening database:', err.message);
+    // Don't exit - allow server to start even if DB fails initially
   } else {
     console.log('Connected to SQLite database');
     initializeTables();
   }
+});
+
+// Handle database errors gracefully
+db.on('error', (err) => {
+  console.error('Database error:', err);
 });
 
 function initializeTables() {

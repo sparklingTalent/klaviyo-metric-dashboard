@@ -161,13 +161,36 @@ The application uses SQLite for data storage. The database file (`klaviyo_dashbo
 
 ## Deployment
 
-This application can be deployed with:
+This application is **deployment-ready** and can be deployed with:
 - **Backend**: Railway (recommended) or any Node.js hosting
 - **Frontend**: Vercel (recommended) or any static hosting
 
-See [DEPLOYMENT.md](./DEPLOYMENT.md) for detailed deployment instructions.
+### Quick Links
+- 📖 **Full Guide**: [DEPLOYMENT.md](./DEPLOYMENT.md) - Complete step-by-step instructions
+- ⚡ **Quick Reference**: [DEPLOY_QUICK.md](./DEPLOY_QUICK.md) - 5-step deployment guide
+- ✅ **Checklist**: [DEPLOYMENT_CHECKLIST.md](./DEPLOYMENT_CHECKLIST.md) - Deployment verification checklist
 
-Quick start: See [DEPLOY_QUICK.md](./DEPLOY_QUICK.md) for a 5-step deployment guide.
+### What's Included
+- ✅ Vercel configuration (`vercel.json`)
+- ✅ Railway configuration (`railway.json`, `nixpacks.toml`, `Procfile`)
+- ✅ Environment variable examples (`.env.example` files)
+- ✅ Production-ready CORS configuration
+- ✅ API URL configuration for frontend
+- ✅ Build scripts and deployment configurations
+
+### Quick Deploy
+
+**Backend (Railway):**
+1. Push code to GitHub
+2. Create Railway project → Deploy from GitHub
+3. Set env vars: `JWT_SECRET`, `NODE_ENV=production`
+4. Deploy!
+
+**Frontend (Vercel):**
+1. Import GitHub repo to Vercel
+2. Set build: `cd client && npm run build`
+3. Set env var: `REACT_APP_API_URL` = your Railway URL
+4. Deploy!
 
 ## License
 
