@@ -1,0 +1,9 @@
+node_modules/
+.env
+*.db
+*.sqlite
+*.sqlite3
+client/node_modules/
+client/build/
+.DS_Store
+
