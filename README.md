@@ -159,6 +159,16 @@ The application uses SQLite for data storage. The database file (`klaviyo_dashbo
 - Change the `PORT` in `.env` if port 3001 is in use
 - Update the proxy in `client/package.json` if needed
 
+## Deployment
+
+This application can be deployed with:
+- **Backend**: Railway (recommended) or any Node.js hosting
+- **Frontend**: Vercel (recommended) or any static hosting
+
+See [DEPLOYMENT.md](./DEPLOYMENT.md) for detailed deployment instructions.
+
+Quick start: See [DEPLOY_QUICK.md](./DEPLOY_QUICK.md) for a 5-step deployment guide.
+
 ## License
 
 ISC
