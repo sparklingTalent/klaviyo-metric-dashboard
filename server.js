@@ -11,7 +11,39 @@ const app = express();
 const PORT = process.env.PORT || 3001;
 
 // Middleware
-app.use(cors());
+// CORS configuration for production
+const corsOptions = {
+  origin: function (origin, callback) {
+    // Allow requests with no origin (like mobile apps or curl requests)
+    if (!origin) return callback(null, true);
+    
+    // In development, allow localhost
+    if (process.env.NODE_ENV !== 'production') {
+      return callback(null, true);
+    }
+    
+    // In production, allow Vercel domains and custom frontend URL
+    const allowedPatterns = [
+      /\.vercel\.app$/,
+      /\.vercel\.dev$/,
+      process.env.FRONTEND_URL
+    ].filter(Boolean);
+    
+    const isAllowed = allowedPatterns.some(pattern => {
+      if (typeof pattern === 'string') return origin === pattern;
+      if (pattern instanceof RegExp) return pattern.test(origin);
+      return false;
+    });
+    
+    // For production, allow all origins (you can restrict this if needed)
+    // Or uncomment below to restrict to specific domains:
+    // callback(isAllowed ? null : new Error('Not allowed by CORS'), isAllowed);
+    callback(null, true);
+  },
+  credentials: true
+};
+
+app.use(cors(corsOptions));
 app.use(express.json());
 
 // Serve static files from React app only if build directory exists

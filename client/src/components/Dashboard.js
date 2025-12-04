@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { useAuth } from '../context/AuthContext';
 import axios from 'axios';
+import API_URL from '../config';
 import './Dashboard.css';
 
 function Dashboard() {
@@ -20,7 +21,7 @@ function Dashboard() {
     try {
       setLoading(true);
       setError('');
-      const response = await axios.get('/api/dashboard/metrics');
+      const response = await axios.get(`${API_URL}/api/dashboard/metrics`);
       setMetrics(response.data);
     } catch (err) {
       setError(err.response?.data?.message || 'Failed to load metrics');

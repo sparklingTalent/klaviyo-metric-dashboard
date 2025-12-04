@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import axios from 'axios';
+import API_URL from '../config';
 import './AdminPanel.css';
 
 function AdminPanel() {
@@ -19,7 +20,7 @@ function AdminPanel() {
 
   const fetchClients = async () => {
     try {
-      const response = await axios.get('/api/admin/clients');
+      const response = await axios.get(`${API_URL}/api/admin/clients`);
       setClients(response.data);
     } catch (error) {
       console.error('Error fetching clients:', error);
@@ -32,7 +33,7 @@ function AdminPanel() {
     setMessage({ type: '', text: '' });
 
     try {
-      await axios.post('/api/admin/clients', formData);
+      await axios.post(`${API_URL}/api/admin/clients`, formData);
       setMessage({ type: 'success', text: 'Client added successfully!' });
       setFormData({ name: '', email: '', password: '', klaviyoPrivateKey: '' });
       fetchClients();
