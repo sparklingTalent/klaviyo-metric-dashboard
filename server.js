@@ -11,46 +11,61 @@ const app = express();
 const PORT = process.env.PORT || 3001;
 
 // Middleware
-// CORS configuration for production
+// CORS configuration for production - allow all origins for simplicity
+// In production, you can restrict this to specific domains
 const corsOptions = {
   origin: function (origin, callback) {
     // Allow requests with no origin (like mobile apps or curl requests)
     if (!origin) return callback(null, true);
     
-    // In development, allow localhost
-    if (process.env.NODE_ENV !== 'production') {
-      return callback(null, true);
-    }
-    
-    // In production, allow Vercel domains and custom frontend URL
-    const allowedPatterns = [
+    // Allow all origins in production (you can restrict this if needed)
+    // For better security, uncomment and configure specific domains:
+    /*
+    const allowedOrigins = [
+      'https://klaviyo-metric-dashboard.vercel.app',
+      'https://klaviyo-metric-dashboard-production.vercel.app',
       /\.vercel\.app$/,
       /\.vercel\.dev$/,
       process.env.FRONTEND_URL
     ].filter(Boolean);
     
-    const isAllowed = allowedPatterns.some(pattern => {
+    const isAllowed = allowedOrigins.some(pattern => {
       if (typeof pattern === 'string') return origin === pattern;
       if (pattern instanceof RegExp) return pattern.test(origin);
       return false;
     });
     
-    // For production, allow all origins (you can restrict this if needed)
-    // Or uncomment below to restrict to specific domains:
-    // callback(isAllowed ? null : new Error('Not allowed by CORS'), isAllowed);
+    callback(isAllowed ? null : new Error('Not allowed by CORS'), isAllowed);
+    */
     callback(null, true);
   },
-  credentials: true
+  credentials: true,
+  methods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS'],
+  allowedHeaders: ['Content-Type', 'Authorization', 'X-Requested-With'],
+  exposedHeaders: ['Content-Type', 'Authorization'],
+  optionsSuccessStatus: 200 // Some legacy browsers (IE11, various SmartTVs) choke on 204
 };
 
 app.use(cors(corsOptions));
+
+// Handle preflight requests explicitly
+app.options('*', cors(corsOptions));
+
 app.use(express.json());
+app.use(express.urlencoded({ extended: true }));
 
 // Serve static files from React app only if build directory exists
 const buildPath = path.join(__dirname, 'client/build');
 if (fs.existsSync(buildPath)) {
   app.use(express.static(buildPath));
 }
+
+// ==================== HEALTH CHECK ====================
+
+// Health check endpoint
+app.get('/health', (req, res) => {
+  res.json({ status: 'ok', timestamp: new Date().toISOString() });
+});
 
 // ==================== ADMIN ROUTES ====================
 
@@ -204,8 +219,31 @@ app.get('*', (req, res) => {
   }
 });
 
+// Error handling middleware (must be after all routes)
+app.use((err, req, res, next) => {
+  console.error('Error:', err);
+  res.status(err.status || 500).json({
+    error: err.message || 'Internal server error',
+    ...(process.env.NODE_ENV === 'development' && { stack: err.stack })
+  });
+});
+
 // Start server
-app.listen(PORT, () => {
-  console.log(`Server running on http://localhost:${PORT}`);
+// Listen on 0.0.0.0 to accept connections from all network interfaces (required for Railway)
+app.listen(PORT, '0.0.0.0', () => {
+  console.log(`Server running on port ${PORT}`);
+  console.log(`Environment: ${process.env.NODE_ENV || 'development'}`);
+  console.log(`CORS enabled for all origins`);
+});
+
+// Handle uncaught exceptions
+process.on('uncaughtException', (err) => {
+  console.error('Uncaught Exception:', err);
+  process.exit(1);
+});
+
+process.on('unhandledRejection', (reason, promise) => {
+  console.error('Unhandled Rejection at:', promise, 'reason:', reason);
+  process.exit(1);
 });
 
