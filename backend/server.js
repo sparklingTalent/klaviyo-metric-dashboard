@@ -47,16 +47,54 @@ const corsOptions = {
 // Apply CORS middleware - this handles both preflight (OPTIONS) and actual requests
 app.use(cors(corsOptions));
 
+// Explicitly handle OPTIONS requests for all routes (additional safety)
+app.options('*', cors(corsOptions));
+
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
+
+// Request logging middleware (for debugging)
+app.use((req, res, next) => {
+  console.log(`${new Date().toISOString()} - ${req.method} ${req.path}`);
+  console.log('Origin:', req.headers.origin);
+  next();
+});
 
 // Frontend is deployed separately on Vercel, so we don't serve static files here
 
 // ==================== HEALTH CHECK ====================
 
-// Health check endpoint
+// Health check endpoint with detailed API information
 app.get('/health', (req, res) => {
-  res.json({ status: 'ok', timestamp: new Date().toISOString() });
+  res.json({ 
+    status: 'ok', 
+    timestamp: new Date().toISOString(),
+    environment: process.env.NODE_ENV || 'development',
+    port: PORT,
+    api: {
+      admin: {
+        getClients: 'GET /api/admin/clients',
+        addClient: 'POST /api/admin/clients'
+      },
+      auth: {
+        login: 'POST /api/auth/login'
+      },
+      dashboard: {
+        metrics: 'GET /api/dashboard/metrics',
+        profile: 'GET /api/dashboard/profile'
+      }
+    }
+  });
+});
+
+// Test endpoint to verify CORS and routing
+app.get('/api/test', (req, res) => {
+  res.json({ 
+    message: 'API is working!',
+    timestamp: new Date().toISOString(),
+    origin: req.headers.origin,
+    method: req.method
+  });
 });
 
 // ==================== ADMIN ROUTES ====================
@@ -64,6 +102,7 @@ app.get('/health', (req, res) => {
 // Add a new client (admin only - in production, add admin authentication)
 app.post('/api/admin/clients', async (req, res) => {
   try {
+    console.log('POST /api/admin/clients - Request received');
     const { name, email, password, klaviyoPrivateKey } = req.body;
 
     // Validation
@@ -95,11 +134,16 @@ app.post('/api/admin/clients', async (req, res) => {
 // Get all clients (admin only)
 app.get('/api/admin/clients', async (req, res) => {
   try {
+    console.log('GET /api/admin/clients - Request received');
     const clients = await dbOperations.getAllClients();
+    console.log(`GET /api/admin/clients - Returning ${clients.length} clients`);
     res.json(clients);
   } catch (error) {
     console.error('Error fetching clients:', error);
-    res.status(500).json({ error: 'Failed to fetch clients' });
+    res.status(500).json({ 
+      error: 'Failed to fetch clients',
+      message: error.message 
+    });
   }
 });
 
@@ -197,11 +241,22 @@ app.get('/api/dashboard/profile', authenticateToken, async (req, res) => {
 app.get('/', (req, res) => {
   res.json({ 
     message: 'Klaviyo Dashboard API Server',
+    version: '1.0.0',
+    timestamp: new Date().toISOString(),
     api: {
-      admin: '/api/admin/clients',
-      auth: '/api/auth/login',
-      dashboard: '/api/dashboard/metrics',
-      health: '/health'
+      health: '/health',
+      test: '/api/test',
+      admin: {
+        getClients: 'GET /api/admin/clients',
+        addClient: 'POST /api/admin/clients'
+      },
+      auth: {
+        login: 'POST /api/auth/login'
+      },
+      dashboard: {
+        metrics: 'GET /api/dashboard/metrics',
+        profile: 'GET /api/dashboard/profile'
+      }
     }
   });
 });
@@ -212,6 +267,32 @@ app.use((err, req, res, next) => {
   res.status(err.status || 500).json({
     error: err.message || 'Internal server error',
     ...(process.env.NODE_ENV === 'development' && { stack: err.stack })
+  });
+});
+
+// Catch-all route for debugging 404s (must be after error handler)
+app.use((req, res) => {
+  console.error(`404 - Route not found: ${req.method} ${req.path}`);
+  console.error('Headers:', JSON.stringify(req.headers, null, 2));
+  res.status(404).json({ 
+    error: 'Route not found',
+    method: req.method,
+    path: req.path,
+    availableRoutes: {
+      health: 'GET /health',
+      test: 'GET /api/test',
+      admin: {
+        getClients: 'GET /api/admin/clients',
+        addClient: 'POST /api/admin/clients'
+      },
+      auth: {
+        login: 'POST /api/auth/login'
+      },
+      dashboard: {
+        metrics: 'GET /api/dashboard/metrics',
+        profile: 'GET /api/dashboard/profile'
+      }
+    }
   });
 });
 
