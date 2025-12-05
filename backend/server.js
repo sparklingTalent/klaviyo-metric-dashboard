@@ -1,8 +1,6 @@
 require('dotenv').config();
 const express = require('express');
 const cors = require('cors');
-const path = require('path');
-const fs = require('fs');
 const { dbOperations } = require('./database');
 const KlaviyoService = require('./klaviyoService');
 const { hashPassword, comparePassword, generateToken, authenticateToken } = require('./auth');
@@ -52,11 +50,7 @@ app.use(cors(corsOptions));
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
 
-// Serve static files from React app only if build directory exists
-const buildPath = path.join(__dirname, 'client/build');
-if (fs.existsSync(buildPath)) {
-  app.use(express.static(buildPath));
-}
+// Frontend is deployed separately on Vercel, so we don't serve static files here
 
 // ==================== HEALTH CHECK ====================
 
@@ -199,22 +193,17 @@ app.get('/api/dashboard/profile', authenticateToken, async (req, res) => {
   }
 });
 
-// Serve React app (only if build exists, otherwise return API info)
-app.get('*', (req, res) => {
-  const indexPath = path.join(__dirname, 'client/build', 'index.html');
-  if (fs.existsSync(indexPath)) {
-    res.sendFile(indexPath);
-  } else {
-    // In development, React dev server handles frontend
-    res.status(404).json({ 
-      message: 'API server running. Frontend not built. Run "cd client && npm start" for development.',
-      api: {
-        admin: '/api/admin/clients',
-        auth: '/api/auth/login',
-        dashboard: '/api/dashboard/metrics'
-      }
-    });
-  }
+// API-only server - frontend is deployed separately on Vercel
+app.get('/', (req, res) => {
+  res.json({ 
+    message: 'Klaviyo Dashboard API Server',
+    api: {
+      admin: '/api/admin/clients',
+      auth: '/api/auth/login',
+      dashboard: '/api/dashboard/metrics',
+      health: '/health'
+    }
+  });
 });
 
 // Error handling middleware (must be after all routes)

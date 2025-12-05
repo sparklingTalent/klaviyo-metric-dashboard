@@ -2,10 +2,8 @@ node_modules/
 .env
 .env.local
 *.log
-client/
+frontend/
 .git/
 .DS_Store
-*.db
-*.sqlite
-*.sqlite3
+.DS_Store
 
