@@ -67,7 +67,7 @@ function Dashboard() {
               <h2 className="section-title">Overview</h2>
               <div className="metrics-grid">
                 {/* Campaigns Count */}
-                <div className="metric-card highlight">
+                <div className="metric-card">
                   <h3>Total Campaigns</h3>
                   <div className="metric-value-large">{metrics.campaignCount?.toLocaleString() || 0}</div>
                 </div>
@@ -80,7 +80,7 @@ function Dashboard() {
 
                 {/* Total Revenue */}
                 {metrics.revenueMetrics && (
-                  <div className="metric-card">
+                  <div className="metric-card highlight">
                     <h3>Total Revenue</h3>
                     <div className="metric-value-large">
                       ${metrics.revenueMetrics.totalRevenue?.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 }) || '0.00'}
