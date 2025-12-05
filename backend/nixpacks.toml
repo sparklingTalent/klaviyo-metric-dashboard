@@ -1,6 +1,7 @@
 # Nixpacks configuration for Railway
+# npm comes bundled with nodejs, so we don't need to specify it separately
 [phases.setup]
-nixPkgs = ["nodejs-18_x", "npm"]
+nixPkgs = ["nodejs-18_x"]
 
 [phases.install]
 cmds = ["npm install"]
