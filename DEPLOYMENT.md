@@ -26,16 +26,11 @@ Before starting, ensure you have:
 
 ### Step 1: Prepare Your Repository
 
-1. **Create a `.railwayignore` file** (optional, similar to `.gitignore`):
-   ```
-   node_modules/
-   .env
-   .git/
-   client/
-   *.log
-   ```
+1. **Navigate to the backend directory**:
+   - The backend code is now in the `backend/` folder
+   - Railway should be configured to use `backend/` as the root directory
 
-2. **Ensure your `package.json` has a start script**:
+2. **Ensure your `backend/package.json` has a start script**:
    ```json
    {
      "scripts": {
@@ -57,7 +52,8 @@ Before starting, ensure you have:
    - Railway will automatically detect it's a Node.js project
 
 3. **Configure the Service**
-   - Railway will auto-detect your `package.json`
+   - **Important**: Set the **Root Directory** to `backend` in Railway settings (Settings → Source → Root Directory)
+   - Railway will auto-detect your `backend/package.json`
    - It will run `npm install` automatically
    - Set the start command to: `npm start` (or leave default)
 
@@ -128,17 +124,17 @@ const pool = new Pool({
 ### Step 1: Prepare Frontend for Production
 
 1. **Update API Base URL**
-   - Create a `.env.production` file in the `client` directory:
+   - Create a `.env.production` file in the `frontend` directory:
    ```
    REACT_APP_API_URL=https://your-railway-app.up.railway.app
    ```
 
 2. **Update API Calls** (if needed)
-   - Check `client/src/context/AuthContext.js` and `client/src/components/Dashboard.js`
+   - Check `frontend/src/context/AuthContext.js` and `frontend/src/components/Dashboard.js`
    - They use relative URLs which will work with Vercel's proxy
    - But for production, you might want to use the full Railway URL
 
-3. **Update `client/package.json` build script** (should already be correct):
+3. **Update `frontend/package.json` build script** (should already be correct):
    ```json
    {
      "scripts": {
@@ -162,10 +158,10 @@ const pool = new Pool({
 
 3. **Configure Build Settings**
    - **Framework Preset:** Create React App
-   - **Root Directory:** Leave empty (or set to `client` if your repo root is the client folder)
-   - **Build Command:** `cd client && npm run build` (if repo root) OR `npm run build` (if already in client)
-   - **Output Directory:** `client/build` (if repo root) OR `build` (if already in client)
-   - **Install Command:** `cd client && npm install` (if repo root) OR `npm install` (if already in client)
+   - **Root Directory:** `frontend` (or leave empty if using vercel.json)
+   - **Build Command:** `cd frontend && npm run build` (if repo root) OR `npm run build` (if already in frontend)
+   - **Output Directory:** `frontend/build` (if repo root) OR `build` (if already in frontend)
+   - **Install Command:** `cd frontend && npm install` (if repo root) OR `npm install` (if already in frontend)
 
 4. **Set Environment Variables**
    - Go to "Environment Variables"
@@ -192,9 +188,9 @@ const pool = new Pool({
    vercel login
    ```
 
-3. **Navigate to client directory**
+3. **Navigate to frontend directory**
    ```bash
-   cd client
+   cd frontend
    ```
 
 4. **Deploy**
@@ -209,33 +205,41 @@ const pool = new Pool({
 Since your project has both frontend and backend in one repo:
 
 **If deploying from repo root:**
-1. Set **Root Directory** to: `client`
-2. Or create a `vercel.json` in the root:
+1. Set **Root Directory** to: `frontend`
+2. Or create a `vercel.json` in the root (already exists):
    ```json
    {
-     "buildCommand": "cd client && npm install && npm run build",
-     "outputDirectory": "client/build",
-     "installCommand": "cd client && npm install"
+     "buildCommand": "cd frontend && npm install && npm run build",
+     "outputDirectory": "frontend/build",
+     "installCommand": "cd frontend && npm install"
    }
    ```
 
-**Recommended: Create `vercel.json` in project root:**
+**Recommended: Use existing `vercel.json` in project root:**
 ```json
 {
   "version": 2,
   "builds": [
     {
-      "src": "client/package.json",
+      "src": "frontend/package.json",
       "use": "@vercel/static-build",
       "config": {
-        "distDir": "client/build"
+        "distDir": "build"
       }
     }
   ],
   "routes": [
     {
+      "src": "/static/(.*)",
+      "dest": "/static/$1"
+    },
+    {
+      "src": "/(.*\\.(js|css|ico|png|jpg|svg|json|woff|woff2|ttf|eot))",
+      "dest": "/$1"
+    },
+    {
       "src": "/(.*)",
-      "dest": "client/build/$1"
+      "dest": "/index.html"
     }
   ]
 }
@@ -273,7 +277,7 @@ Since your project has both frontend and backend in one repo:
 
 ### Step 2: Update Frontend API URLs
 
-1. **Update `client/src/context/AuthContext.js`:**
+1. **Update `frontend/src/context/AuthContext.js`:**
    ```javascript
    const API_URL = process.env.REACT_APP_API_URL || '';
    
@@ -287,7 +291,7 @@ Since your project has both frontend and backend in one repo:
 
 2. **Update all axios calls to use `API_URL` prefix**
 
-   Or create `client/src/config.js`:
+   Or create `frontend/src/config.js`:
    ```javascript
    export const API_URL = process.env.REACT_APP_API_URL || '';
    ```

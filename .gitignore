@@ -5,8 +5,9 @@ node_modules/
 *.db
 *.sqlite
 *.sqlite3
-client/node_modules/
-client/build/
+frontend/node_modules/
+frontend/build/
+backend/node_modules/
 .DS_Store
 *.log
 .vscode/

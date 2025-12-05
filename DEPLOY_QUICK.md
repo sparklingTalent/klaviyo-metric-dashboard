@@ -35,9 +35,9 @@
 
 2. **Configure Build**
    - Framework: Create React App
-   - Root Directory: Leave empty (or `client` if needed)
-   - Build Command: `cd client && npm run build`
-   - Output Directory: `client/build`
+   - Root Directory: `frontend` (or leave empty if using vercel.json)
+   - Build Command: `cd frontend && npm run build` (or auto-detected)
+   - Output Directory: `frontend/build` (or auto-detected)
 
 3. **Set Environment Variable**
    - Go to "Environment Variables"
